@@ -1,9 +1,34 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type { Category, Dish, Restaurant } from "@/lib/types";
 import DishCard from "@/components/DishCard";
 
 type Props = { restaurant: Restaurant; categories: Category[]; initialDishes: Dish[] };
 
-export default function LiveMenu({ restaurant, categories, initialDishes: dishes }: Props) {
+export default function LiveMenu({ restaurant, categories, initialDishes }: Props) {
+  const [dishes, setDishes] = useState(initialDishes);
+
+  // Tiempo real: cuando el restaurante cambia un plato, la carta se actualiza sola.
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel("carta")
+      .on("postgres_changes", { event: "*", schema: "public", table: "dishes" }, (change) => {
+        if (change.eventType === "DELETE") {
+          setDishes((list) => list.filter((d) => d.id !== change.old.id));
+        } else {
+          const dish = change.new as Dish;
+          setDishes((list) => [...list.filter((d) => d.id !== dish.id), dish]);
+        }
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return (
     <main className="mx-auto max-w-md px-4 pb-16">
       <header className="py-8 text-center">
