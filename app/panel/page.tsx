@@ -18,6 +18,7 @@ async function Panel() {
         <h1 className="font-serif text-3xl font-bold text-stone-900">{restaurant?.name}</h1>
         <nav className="flex gap-2 text-sm font-bold">
           <Link href="/panel/nuevo" className="rounded-xl bg-amber-600 px-4 py-2 text-white">+ Nuevo plato</Link>
+          <Link href="/panel/qr" className="rounded-xl border border-stone-300 bg-white px-4 py-2">QR</Link>
           <form action={signOut}>
             <button className="rounded-xl px-3 py-2 text-stone-500">Salir</button>
           </form>
